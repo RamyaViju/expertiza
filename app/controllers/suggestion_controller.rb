@@ -22,7 +22,7 @@ class SuggestionController < ApplicationController
     @suggestioncomment.suggestion_id = params[:id]
     @suggestioncomment.commenter = session[:user].name
     if @suggestioncomment.save
-      flash[:notice] = "Your comment has been successfully added."
+      flash[:success] = "Your comment has been successfully added."
     else
       flash[:error] = "There was an error in adding your comment."
     end
@@ -99,7 +99,7 @@ class SuggestionController < ApplicationController
   # this is a method for lazy team creation. Here may not be the right place for this method.
   # should be refactored into a static method in AssignmentTeam class. --Yang
   def create_new_team
-    new_team = AssignmentTeam.create(name: 'Team' + @user_id.to_s + '_' + rand(1000).to_s,
+    new_team = AssignmentTeam.create(name: 'Team_' + rand(10_000).to_s,
                                      parent_id: @signuptopic.assignment_id, type: 'AssignmentTeam')
     t_user = TeamsUser.create(team_id: new_team.id, user_id: @user_id)
     SignedUpTeam.create(topic_id: @signuptopic.id, team_id: new_team.id, is_waitlisted: 0)
@@ -179,6 +179,12 @@ class SuggestionController < ApplicationController
       flash[:error] = 'An error occurred when rejecting the suggestion.'
     end
     redirect_to action: 'show', id: @suggestion
+  end
+
+  def update_visibility
+    SuggestionComment.find(params[:cmnt_id]).update_attributes(visible_to_student: params[:visibility])
+    puts params[:cmnt_id], params[:visibility]
+    render json: {success: 'true'}
   end
 
   private

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180427030840) do
+ActiveRecord::Schema.define(version: 20200724165034) do
 
   create_table "answer_tags", force: :cascade do |t|
     t.integer  "answer_id",                limit: 4
@@ -64,58 +64,61 @@ ActiveRecord::Schema.define(version: 20180427030840) do
   create_table "assignments", force: :cascade do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "name",                       limit: 255
-    t.string   "directory_path",             limit: 255
-    t.integer  "submitter_count",            limit: 4,     default: 0,      null: false
-    t.integer  "course_id",                  limit: 4,     default: 0
-    t.integer  "instructor_id",              limit: 4,     default: 0
-    t.boolean  "private",                                  default: false,  null: false
-    t.integer  "num_reviews",                limit: 4,     default: 3,      null: false
-    t.integer  "num_review_of_reviews",      limit: 4,     default: 0,      null: false
-    t.integer  "num_review_of_reviewers",    limit: 4,     default: 0,      null: false
+    t.string   "name",                                               limit: 255
+    t.string   "directory_path",                                     limit: 255
+    t.integer  "submitter_count",                                    limit: 4,     default: 0,      null: false
+    t.integer  "course_id",                                          limit: 4,     default: 0
+    t.integer  "instructor_id",                                      limit: 4,     default: 0
+    t.boolean  "private",                                                          default: false,  null: false
+    t.integer  "num_reviews",                                        limit: 4,     default: 3,      null: false
+    t.integer  "num_review_of_reviews",                              limit: 4,     default: 0,      null: false
+    t.integer  "num_review_of_reviewers",                            limit: 4,     default: 0,      null: false
     t.boolean  "reviews_visible_to_all"
-    t.integer  "num_reviewers",              limit: 4,     default: 0,      null: false
-    t.text     "spec_location",              limit: 65535
-    t.integer  "max_team_size",              limit: 4,     default: 0,      null: false
+    t.integer  "num_reviewers",                                      limit: 4,     default: 0,      null: false
+    t.text     "spec_location",                                      limit: 65535
+    t.integer  "max_team_size",                                      limit: 4,     default: 0,      null: false
     t.boolean  "staggered_deadline"
     t.boolean  "allow_suggestions"
-    t.integer  "days_between_submissions",   limit: 4
-    t.string   "review_assignment_strategy", limit: 255
-    t.integer  "max_reviews_per_submission", limit: 4
-    t.integer  "review_topic_threshold",     limit: 4,     default: 0
-    t.boolean  "copy_flag",                                default: false
-    t.integer  "rounds_of_reviews",          limit: 4,     default: 1
-    t.boolean  "microtask",                                default: false
+    t.integer  "days_between_submissions",                           limit: 4
+    t.string   "review_assignment_strategy",                         limit: 255
+    t.integer  "max_reviews_per_submission",                         limit: 4
+    t.integer  "review_topic_threshold",                             limit: 4,     default: 0
+    t.boolean  "copy_flag",                                                        default: false
+    t.integer  "rounds_of_reviews",                                  limit: 4,     default: 1
+    t.boolean  "microtask",                                                        default: false
     t.boolean  "require_quiz"
-    t.integer  "num_quiz_questions",         limit: 4,     default: 0,      null: false
+    t.integer  "num_quiz_questions",                                 limit: 4,     default: 0,      null: false
     t.boolean  "is_coding_assignment"
     t.boolean  "is_intelligent"
-    t.boolean  "calculate_penalty",                        default: false,  null: false
-    t.integer  "late_policy_id",             limit: 4
-    t.boolean  "is_penalty_calculated",                    default: false,  null: false
-    t.integer  "max_bids",                   limit: 4
+    t.boolean  "calculate_penalty",                                                default: false,  null: false
+    t.integer  "late_policy_id",                                     limit: 4
+    t.boolean  "is_penalty_calculated",                                            default: false,  null: false
+    t.integer  "max_bids",                                           limit: 4
     t.boolean  "show_teammate_reviews"
-    t.boolean  "availability_flag",                        default: true
+    t.boolean  "availability_flag",                                                default: true
     t.boolean  "use_bookmark"
-    t.boolean  "can_review_same_topic",                    default: true
-    t.boolean  "can_choose_topic_to_review",               default: true
-    t.boolean  "is_calibrated",                            default: false
+    t.boolean  "can_review_same_topic",                                            default: true
+    t.boolean  "can_choose_topic_to_review",                                       default: true
+    t.boolean  "is_calibrated",                                                    default: false
     t.boolean  "is_selfreview_enabled"
-    t.string   "reputation_algorithm",       limit: 255,   default: "Lauw"
-    t.boolean  "is_anonymous",                             default: true
-    t.integer  "num_reviews_required",       limit: 4,     default: 3
-    t.integer  "num_metareviews_required",   limit: 4,     default: 3
-    t.integer  "num_metareviews_allowed",    limit: 4,     default: 3
-    t.integer  "num_reviews_allowed",        limit: 4,     default: 3
-    t.integer  "simicheck",                  limit: 4,     default: -1
-    t.integer  "simicheck_threshold",        limit: 4,     default: 100
+    t.string   "reputation_algorithm",                               limit: 255,   default: "Lauw"
+    t.boolean  "is_anonymous",                                                     default: true
+    t.integer  "num_reviews_required",                               limit: 4,     default: 3
+    t.integer  "num_metareviews_required",                           limit: 4,     default: 3
+    t.integer  "num_metareviews_allowed",                            limit: 4,     default: 3
+    t.integer  "num_reviews_allowed",                                limit: 4,     default: 3
+    t.integer  "simicheck",                                          limit: 4,     default: -1
+    t.integer  "simicheck_threshold",                                limit: 4,     default: 100
     t.boolean  "is_answer_tagging_allowed"
     t.boolean  "has_badge"
+    t.boolean  "allow_selecting_additional_reviews_after_1st_round"
+    t.integer  "sample_assignment_id",                               limit: 4
   end
 
   add_index "assignments", ["course_id"], name: "fk_assignments_courses", using: :btree
   add_index "assignments", ["instructor_id"], name: "fk_assignments_instructors", using: :btree
   add_index "assignments", ["late_policy_id"], name: "fk_late_policy_id", using: :btree
+  add_index "assignments", ["sample_assignment_id"], name: "fk_rails_b01b82a1a2", using: :btree
 
   create_table "automated_metareviews", force: :cascade do |t|
     t.float    "relevance",         limit: 24
@@ -262,7 +265,7 @@ ActiveRecord::Schema.define(version: 20180427030840) do
     t.integer  "round",                       limit: 4
     t.boolean  "flag",                                    default: false
     t.integer  "threshold",                   limit: 4,   default: 1
-    t.integer  "delayed_job_id",              limit: 4
+    t.string   "delayed_job_id",              limit: 255
     t.string   "deadline_name",               limit: 255
     t.string   "description_url",             limit: 255
     t.integer  "quiz_allowed_id",             limit: 4,   default: 1
@@ -434,7 +437,7 @@ ActiveRecord::Schema.define(version: 20180427030840) do
     t.integer "questionnaire_id", limit: 4
     t.decimal "seq",                            precision: 6, scale: 2
     t.string  "type",             limit: 255
-    t.string  "size",             limit: 255,                           default: ""
+    t.string  "size",             limit: 255
     t.string  "alternatives",     limit: 255
     t.boolean "break_before",                                           default: true
     t.string  "max_label",        limit: 255,                           default: ""
@@ -615,11 +618,12 @@ ActiveRecord::Schema.define(version: 20180427030840) do
   end
 
   create_table "suggestion_comments", force: :cascade do |t|
-    t.text     "comments",      limit: 65535
-    t.string   "commenter",     limit: 255
-    t.string   "vote",          limit: 255
-    t.integer  "suggestion_id", limit: 4
+    t.text     "comments",           limit: 65535
+    t.string   "commenter",          limit: 255
+    t.string   "vote",               limit: 255
+    t.integer  "suggestion_id",      limit: 4
     t.datetime "created_at"
+    t.boolean  "visible_to_student",               default: false
   end
 
   create_table "suggestions", force: :cascade do |t|
@@ -703,6 +707,7 @@ ActiveRecord::Schema.define(version: 20180427030840) do
     t.integer "directory_num",              limit: 4
     t.integer "grade_for_submission",       limit: 4
     t.text    "comment_for_submission",     limit: 65535
+    t.boolean "make_public",                              default: false
   end
 
   create_table "teams_users", force: :cascade do |t|
@@ -711,6 +716,7 @@ ActiveRecord::Schema.define(version: 20180427030840) do
   end
 
   add_index "teams_users", ["team_id"], name: "fk_users_teams", using: :btree
+  add_index "teams_users", ["user_id", "team_id"], name: "index_teams_users_on_user_id_and_team_id", unique: true, using: :btree
   add_index "teams_users", ["user_id"], name: "fk_teams_users", using: :btree
 
   create_table "track_notifications", force: :cascade do |t|
@@ -764,11 +770,11 @@ ActiveRecord::Schema.define(version: 20180427030840) do
   add_index "users", ["role_id"], name: "fk_user_role_id", using: :btree
 
   create_table "versions", force: :cascade do |t|
-    t.string   "item_type",  limit: 255,   null: false
-    t.integer  "item_id",    limit: 4,     null: false
-    t.string   "event",      limit: 255,   null: false
+    t.string   "item_type",  limit: 255,      null: false
+    t.integer  "item_id",    limit: 4,        null: false
+    t.string   "event",      limit: 255,      null: false
     t.string   "whodunnit",  limit: 255
-    t.text     "object",     limit: 65535
+    t.text     "object",     limit: 16777215
     t.datetime "created_at"
   end
 
@@ -783,6 +789,7 @@ ActiveRecord::Schema.define(version: 20180427030840) do
   add_foreign_key "assignment_badges", "badges"
   add_foreign_key "assignment_questionnaires", "assignments", name: "fk_aq_assignments_id"
   add_foreign_key "assignment_questionnaires", "questionnaires", name: "fk_aq_questionnaire_id"
+  add_foreign_key "assignments", "assignments", column: "sample_assignment_id"
   add_foreign_key "assignments", "late_policies", name: "fk_late_policy_id"
   add_foreign_key "assignments", "users", column: "instructor_id", name: "fk_assignments_instructors"
   add_foreign_key "automated_metareviews", "responses", name: "fk_automated_metareviews_responses_id"

@@ -1,10 +1,10 @@
 source 'https://rubygems.org'
 
-gem 'rails', '~> 4.2.7.1'
+gem 'rails', '~> 4.2.11.1'
 
 ## Gems in Alphabetical Order
 gem 'activerecord-session_store'
-gem 'activesupport', '~> 4.2.7.1'
+gem 'activesupport', '~> 4.2.11.1'
 gem 'airbrake'
 gem 'awesome_nested_set'
 gem 'bind-it'
@@ -15,8 +15,10 @@ gem "capistrano-db-tasks", require: false
 gem 'capistrano-passenger'
 gem 'capistrano-rails'
 gem 'capistrano-rvm'
+gem 'chartjs-ror'
+gem 'coffee-rails'
 gem 'coveralls', require: false
-gem 'danger', git: 'https://github.com/Winbobob/danger.git', ref: '24a88bd', require: false
+gem 'danger', git: 'https://github.com/Winbobob/danger.git', ref: 'a2fe557209879642615473ee9919788fc650be75', require: false
 gem 'delayed_job_active_record'
 gem 'dynamic_form'
 gem 'edavis10-ruby-web-search'
@@ -59,6 +61,7 @@ gem 'rwordnet'
 gem 'sass-rails'
 gem 'scrypt'
 gem 'seer'
+gem 'sidekiq'
 gem 'sprockets'
 gem 'stanford-core-nlp'
 gem 'superfish-rails'
@@ -77,7 +80,6 @@ group :development do
   gem 'pry-remote'
   gem 'quiet_assets'
   gem 'rubocop'
-  gem 'selenium-webdriver'
 end
 
 group :test do
@@ -92,11 +94,8 @@ group :test do
   gem 'shoulda'
 end
 
-group :assets do
-  gem 'coffee-rails'
-end
-
 group :development, :test do
   gem 'capybara'
+  gem 'selenium-webdriver'
   gem 'simplecov', require: false
 end

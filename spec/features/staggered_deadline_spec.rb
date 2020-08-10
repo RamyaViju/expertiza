@@ -1,10 +1,17 @@
 describe "Staggered deadline test" do
   before(:each) do
     # assignment and topic
-    create(:assignment, name: "Assignment1665", directory_path: "Assignment1665", rounds_of_reviews: 2, staggered_deadline: true)
+    create(:assignment,
+           name: "Assignment1665",
+           directory_path: "Assignment1665",
+           rounds_of_reviews: 2,
+           staggered_deadline: true,
+           max_team_size: 1,
+           allow_selecting_additional_reviews_after_1st_round: true)
     create_list(:participant, 3)
     create(:topic, topic_name: "Topic_1")
     create(:topic, topic_name: "Topic_2")
+    create(:topic, topic_name: "Topic_3")
 
     # rubric
     create(:questionnaire, name: "TestQuestionnaire1")
@@ -53,11 +60,11 @@ describe "Staggered deadline test" do
   end
 
   # create topic deadline
-  def topic_due(type, time, id, round, review_allowed_id = 3)
+  def topic_due(type, time, topic_id, round, review_allowed_id = 3)
     create(:topic_due_date,
            due_at: time,
            deadline_type: DeadlineType.where(name: type).first,
-           topic: SignUpTopic.where(id: id).first,
+           topic: SignUpTopic.where(id: topic_id).first,
            round: round,
            review_allowed_id: review_allowed_id)
   end
@@ -86,9 +93,9 @@ describe "Staggered deadline test" do
   it "test1: in round 1, student2064 in review stage could do review" do
     # impersonate each participant submit their topics
     submit_topic('student2064', '/sign_up_sheet/sign_up?id=1&topic_id=1', "https://google.com")
-    submit_topic('student2065', '/sign_up_sheet/sign_up?id=1&topic_id=2', "https://ncsu.edu")
+    submit_topic('student2065', '/sign_up_sheet/sign_up?id=1&topic_id=2', "https://youtube.com")
     # change deadline to make student2064 in review stage in round 1
-    change_due(1, 1, 1, DateTime.now.in_time_zone - 10)
+    change_due(1, 1, 1, DateTime.now.in_time_zone - 20)
 
     # impersonate each participant and check their topic's current stage
 
@@ -113,8 +120,9 @@ describe "Staggered deadline test" do
     user = User.find_by(name: 'student2065')
     stub_current_user(user, user.role.name, user.role)
     visit '/student_task/list'
-    expect(page).to have_content "submission"
+    expect(page).to have_content "Stage Deadline"
     click_link 'Assignment1665'
+    sleep(10)
     expect(page).to have_content "Others' work"
     click_link "Others' work"
     expect(page).to have_content 'Reviews for "Assignment1665"'
@@ -235,5 +243,26 @@ describe "Staggered deadline test" do
     click_link "Others' work"
     expect(page).to have_content 'Reviews for "Assignment1665"'
     expect { choose "topic_id_2" }.to raise_error(/Unable to find visible radio button "topic_id_2"/)
+      # expect { click_link "Others' work"}.to raise_error(/Unable to find visible link "Others' work"/)
+  end
+
+  # the test will test the Java script which is embedded into the sign up sheet. The java script will
+  # computer the offset in dates for the deadlines using the first topic and as soon as we input the date
+  # in the first field of a new topic , the other deadlines corresponding to the topic will be populated
+  # automatically using the offsets that were calculated from the first topic.
+  it "test4: When creating a new topic when already a topic exists for assignment , it should take the offset from the first topic for setting the due dates.",
+     js: true do
+    login_as("instructor6")
+    assignment = Assignment.find_by(name: 'Assignment1665')
+    visit "/assignments/#{assignment.id}/edit"
+    click_link 'Topics'
+    expect(page).to have_content 'Show start/due date'
+    click_link 'Show start/due date'
+    expect(page).to have_content 'Hide start/due date'
+    current_time = DateTime.current
+    fill_in 'due_date_3_submission_1_due_date', with: current_time
+    expect(find_field("due_date_3_submission_1_due_date").value).to_not eq(nil)
+    find(:xpath, ".//input[@id='due_date_3_review_1_due_date']").click
+    expect(find_field("due_date_3_review_1_due_date").value).to_not eq(nil)
   end
 end

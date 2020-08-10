@@ -21,6 +21,16 @@ class ImpersonateController < ApplicationController
     flash[:error] = "This page doesn't take any query string." unless request.GET.empty?
   end
 
+  def ajax_search
+    users = User.select(:name).where('name LIKE ?', "#{params[:search]}%")
+    ret = []
+    users.each do |user|
+      ret << user.name
+    end
+    ret.sort!
+    render :json => ret
+  end
+
   def impersonate
     if params[:user]
       message = "No user exists with the name '#{params[:user][:name]}'."
@@ -45,6 +55,8 @@ class ImpersonateController < ApplicationController
           end
           session[:super_user] = session[:user] if session[:super_user].nil?
           AuthController.clear_user_info(session, nil)
+          session[:original_user] = original_user
+          session[:impersonate] = true
           session[:user] = user
         else
           flash[:error] = message
@@ -68,6 +80,8 @@ class ImpersonateController < ApplicationController
             end
             AuthController.clear_user_info(session, nil)
             session[:user] = user
+            session[:impersonate] =  true
+            session[:original_user] = original_user
           else
             flash[:error] = message
             redirect_back

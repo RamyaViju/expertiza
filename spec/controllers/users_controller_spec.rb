@@ -227,7 +227,7 @@ describe UsersController do
                institution_id: 1}
       }
       post :create, params, session
-      expect(response).to render_template(:new)
+      expect(response).to redirect_to('http://test.host/users/new?role=Student')
     end
   end
 
@@ -378,16 +378,6 @@ describe UsersController do
       allow(student2).to receive(:update_attributes).with(any_args).and_return(false)
       post :update, @params
       expect(response).to render_template(:edit)
-    end
-  end
-
-  context '#destroy' do
-    it 'when user is not deleted successfully' do
-      allow(User).to receive(:find).with('2').and_return(student2)
-      @params = {id: 2}
-      get :destroy, @params
-      expect(flash[:error]).not_to be_nil
-      expect(response).to redirect_to('/users/list')
     end
   end
 

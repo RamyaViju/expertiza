@@ -45,8 +45,12 @@ class ImportFileController < ApplicationController
     end
     @current_file = params[:file]
     @current_file_contents = @current_file.read
+    # Removing BOM characters from the file - svshingt
+    @current_file_contents.sub!("\xEF\xBB\xBF".force_encoding("ASCII-8BIT"), '')
     @contents_grid = parse_to_grid(@current_file_contents, @delimiter)
     @contents_hash = parse_to_hash(@contents_grid, params[:has_header])
+    session[:contents_hash] = @contents_hash
+    session[:options] = @options
   end
 
   def start
@@ -87,7 +91,7 @@ class ImportFileController < ApplicationController
 
   def import_from_hash(session, params)
     if params[:model] == "AssignmentTeam" or params[:model] == "CourseTeam"
-      contents_hash = eval(params[:contents_hash])
+      contents_hash = session[:contents_hash]
       @header_integrated_body = hash_rows_with_headers(contents_hash[:header],contents_hash[:body])
       errors = []
       begin
@@ -97,7 +101,7 @@ class ImportFileController < ApplicationController
           else
             teamtype = CourseTeam
           end
-          options = eval(params[:options])
+          options = session[:options]
           options[:has_teamname] = params[:has_teamname]
           Team.import(row_hash, params[:id], options, teamtype)
         end
@@ -105,7 +109,7 @@ class ImportFileController < ApplicationController
         errors << $ERROR_INFO
       end
       elsif params[:model] == "ReviewResponseMap"
-        contents_hash = eval(params[:contents_hash])
+        contents_hash = session[:contents_hash]
         @header_integrated_body = hash_rows_with_headers(contents_hash[:header],contents_hash[:body])
         errors = []
         begin
@@ -116,7 +120,7 @@ class ImportFileController < ApplicationController
           errors << $ERROR_INFO
         end
     elsif params[:model] == "MetareviewResponseMap"
-      contents_hash = eval(params[:contents_hash])
+      contents_hash = session[:contents_hash]
       @header_integrated_body = hash_rows_with_headers(contents_hash[:header],contents_hash[:body])
       errors = []
       begin
@@ -126,8 +130,8 @@ class ImportFileController < ApplicationController
       rescue
         errors << $ERROR_INFO
       end
-    elsif params[:model] == 'SignUpTopic'
-      contents_hash = eval(params[:contents_hash])
+    elsif params[:model] == 'SignUpTopic' || params[:model] == 'SignUpSheet'
+      contents_hash = session[:contents_hash]
       if params[:has_header] == 'true'
         @header_integrated_body = hash_rows_with_headers(contents_hash[:header],contents_hash[:body])
       else
@@ -149,13 +153,13 @@ class ImportFileController < ApplicationController
       begin
         @header_integrated_body.each do |row_hash|
           session[:assignment_id] = params[:id]
-          SignUpTopic.import(row_hash, session, params[:id])
+          Object.const_get(params[:model]).import(row_hash, session, params[:id])
         end
       rescue
         errors << $ERROR_INFO
       end
     elsif params[:model] == 'AssignmentParticipant' || params[:model] == 'CourseParticipant'
-      contents_hash = eval(params[:contents_hash])
+      contents_hash = session[:contents_hash]
       if params[:has_header] == 'true'
         @header_integrated_body = hash_rows_with_headers(contents_hash[:header], contents_hash[:body])
       else
@@ -177,7 +181,7 @@ class ImportFileController < ApplicationController
         errors << $ERROR_INFO
       end
     else # params[:model] = "User"
-      contents_hash = eval(params[:contents_hash])
+      contents_hash = session[:contents_hash]
       if params[:has_header] == 'true'
         @header_integrated_body = hash_rows_with_headers(contents_hash[:header],contents_hash[:body])
       else

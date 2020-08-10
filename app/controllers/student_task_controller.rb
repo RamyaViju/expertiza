@@ -5,11 +5,40 @@ class StudentTaskController < ApplicationController
     ['Instructor', 'Teaching Assistant', 'Administrator', 'Super-Administrator', 'Student'].include? current_role_name
   end
 
+  def impersonating_as_admin?
+    original_user = session[:original_user]
+    admin_role_ids = Role.where(name:['Administrator','Super-Administrator']).pluck(:id)
+    admin_role_ids.include? original_user.role_id
+  end
+
+  def impersonating_as_ta?
+    original_user = session[:original_user]
+    ta_role = Role.where(name:['Teaching Assistant']).pluck(:id)
+    ta_role.include? original_user.role_id
+  end
+
   def list
     redirect_to(controller: 'eula', action: 'display') if current_user.is_new_user
     session[:user] = User.find_by(id: current_user.id)
     @student_tasks = StudentTask.from_user current_user
-    @student_tasks.select! {|t| t.assignment.availability_flag }
+    if session[:impersonate] && !impersonating_as_admin?
+
+      if impersonating_as_ta?
+        ta_course_ids = TaMapping.where(:ta_id => session[:original_user].id).pluck(:course_id)
+        @student_tasks = @student_tasks.select {|t| ta_course_ids.include?t.assignment.course_id }
+      else
+        # Changed logic to adapt to free standing assignments with the same course ID
+        @student_tasks = @student_tasks.select do |t|
+          session[:original_user].id == if t.assignment.course.nil?
+                                          t.assignment.instructor_id
+                                        else
+                                          t.assignment.course.instructor_id
+                                        end
+        end
+      end
+    end
+
+    @student_tasks.select! {|t| t.assignment.availability_flag } unless @assignment.nil?
 
     # #######Tasks and Notifications##################
     @tasknotstarted = @student_tasks.select(&:not_started?)
@@ -58,6 +87,16 @@ class StudentTaskController < ApplicationController
 
     @review_mappings = ResponseMap.where(reviewer_id: @participant.id)
     @review_of_review_mappings = MetareviewResponseMap.where(reviewer_id: @participant.id)
+  end
+
+  # To give permission for making a submission available to others
+  def make_public
+    @team = Team.find(params[:id])
+    @team.make_public = params[:status]
+    @team.save
+    respond_to do |format|
+      format.html { head :no_content }
+    end
   end
 
   def your_work; end

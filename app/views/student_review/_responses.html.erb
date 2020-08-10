@@ -5,11 +5,12 @@
       <%- # ACS Have metareviews done for all teams   -%>
       <%- # removed code that handles team and individual assignments differently   -%>
       <% if map.type.to_s == "MetareviewResponseMap" %>
-          <% review_mapping = ResponseMap.find(map.reviewed_object_id) %>
-          <% participant = AssignmentTeam.get_first_member(review_mapping.reviewee_id) %>
+          <% review_mapping = ResponseMap.find_by(id: map.reviewed_object_id) %>
+          <% team = AssignmentTeam.find_by(id: review_mapping.reviewee_id) %>
       <% else %>
-          <% participant = AssignmentTeam.get_first_member(map.reviewee_id) %>
+          <% team = AssignmentTeam.find(map.reviewee_id) %>
       <% end %>
+      <% participant = team.participants.first %>
 
       <% if participant %>
           <% topic_id = SignedUpTeam.topic_id(participant.parent_id, participant.user_id) %>
@@ -29,9 +30,9 @@
                 &nbsp; (author: <%= participant.fullname%>)
               <%end%>
             </td>
-
+            <% latest_submission = team.most_recent_submission %>
             <td>&nbsp;</td>
-            <% if !map.response.empty? %>
+            <% if !map.response.empty? && latest_submission %>
                 <% array_not_empty = 0 %>
                 <% @sorted_responses = Array.new %>
                 <% @prev = Response.where(:map_id => map.id) %>
@@ -40,7 +41,7 @@
                     <% @sorted_responses << element %>
                 <% end %>
 
-                <% if (array_not_empty == 1) %>
+                <% if array_not_empty == 1 %>
                     <% @sorted_responses = @sorted_responses.sort_by {|obj| obj.updated_at} # the latest should be at the last%>
                     <% @latest_response = @sorted_responses.last %>
 
@@ -57,12 +58,18 @@
                     </td>
 
                     <% if @assignment.get_current_stage(topic_id) != "Finished" %>
-                      <%- # show the link as edit when latest review is done in current deadline   -%>
-                      <%- # show link as update when latest review is done in different deadline than current phase   -%>
-                      <% if (last_response_round == current_round)%>
+                      <%- # show the link as 'Edit' when latest review is done in current round -%>
+                      <%- # show link as 'Update' when latest review is done in different round or there has been a new submission in current round -%>
+                      <% if last_response_round == current_round%>
+
                         <td>
-                          <% if (!@latest_response.is_submitted) %>
+                          <%- # If review is not submitted (is still being edited), show an 'Edit' link. -%>
+                          <% if !@latest_response.is_submitted %>
                               <%= link_to "Edit", {:controller => 'response', :action => 'edit', :id => @latest_response.id} %>
+
+                          <%- # If the submission has been updated since it was last reviewed, show an 'Update' link-%>
+                          <% elsif @latest_response.updated_at < latest_submission.updated_at %>
+                              <td><%= link_to "Update", {:controller => 'response', :action => 'new', :id => map.map_id} %></td>
                           <%end%>
                         </td>
                       <% else %>
@@ -71,13 +78,14 @@
                     <% end %>
                     <td><%= "  -- latest update at #{@latest_response.updated_at.strftime("%a, %b %d, %Y %I:%M:%S %p")}" %></td>
           <%end%>
-            <% elsif @assignment.get_current_stage(topic_id) != "Complete" && @assignment.can_review(topic_id) %>
+            <% elsif @assignment.get_current_stage(topic_id) != "Complete" && ((map.type.to_s == "MetareviewResponseMap" && @assignment.metareview_allowed(topic_id)) || @assignment.can_review(topic_id)) && latest_submission%>
                 <td><%= link_to "Begin", {:controller => 'response', :action => 'new', :id => map.id} %></td>
                 <td>&nbsp;&nbsp;</td>
+
+            <%- # If the team being reviewed has not submitted yet -%>
             <% else %>
-                <td>Begin</td>
-                <td> (Work has not yet been submitted) for
-                <% review_no += 1 %></td>
+                <td> Work has not yet been submitted for Review
+                <%= review_no  %></td>
             <% end %>
             <% review_no+=1 %>
 
@@ -93,7 +101,7 @@
      <% if map.type.to_s != "MetareviewResponseMap" %>
        <% if @sorted_responses !=nil %>
          <table class="grades" style=" font-style: italic; margin-left: 90px;">
-         <% if (@sorted_responses.size > 1) %>
+         <% if @sorted_responses.size > 1 %>
            <%@sorted_responses = @sorted_responses.reverse%>
            <% for i in 1..@sorted_responses.size-1 %>
              <tr>

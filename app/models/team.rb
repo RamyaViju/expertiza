@@ -4,7 +4,12 @@ class Team < ActiveRecord::Base
   has_many :join_team_requests, dependent: :destroy
   has_one :team_node, foreign_key: :node_object_id, dependent: :destroy
   has_many :signed_up_teams, dependent: :destroy
+  has_many :bids, dependent: :destroy
   has_paper_trail
+
+  scope :find_team_for_assignment_and_user, lambda {|assignment_id, user_id|
+    joins(:teams_users).where("teams.parent_id = ? AND teams_users.user_id = ?", assignment_id, user_id)
+  }
 
   # Get the participants of the given team
   def participants
@@ -122,7 +127,7 @@ class Team < ActiveRecord::Base
     num_of_teams = users.length.fdiv(min_team_size).ceil
     next_team_member_index = 0
     for i in (1..num_of_teams).to_a
-      team = Object.const_get(team_type + 'Team').create(name: "Team" + i.to_s, parent_id: parent.id)
+      team = Object.const_get(team_type + 'Team').create(name: 'Team_' + i.to_s, parent_id: parent.id)
       TeamNode.create(parent_id: parent.id, node_object_id: team.id)
       min_team_size.times do
         break if next_team_member_index >= users.length
@@ -148,10 +153,10 @@ class Team < ActiveRecord::Base
   end
 
   # Generate the team name
-  def self.generate_team_name(team_name_prefix)
+  def self.generate_team_name(team_name_prefix = '')
     counter = 1
     loop do
-      team_name = team_name_prefix + "_Team#{counter}"
+      team_name = "Team_#{counter}"
       return team_name unless Team.find_by(name: team_name)
       counter += 1
     end
@@ -177,7 +182,7 @@ class Team < ActiveRecord::Base
   #  changed to hash by E1776
   def self.import(row_hash, id, options, teamtype)
 
-    raise ArgumentError, "Not enough fields on this line." if row_hash.empty? || (row_hash[:teammembers].length < 2 && (options[:has_teamname] == "true_first" || options[:has_teamname] == "true_last")) || (row_hash[:teammembers].empty? && (options[:has_teamname] == "true_first" || options[:has_teamname] == "true_last"))
+    raise ArgumentError, "Not enough fields on this line." if row_hash.empty? || (row_hash[:teammembers].length < 1 && (options[:has_teamname] == "true_first" || options[:has_teamname] == "true_last")) || (row_hash[:teammembers].empty? && (options[:has_teamname] == "true_first" || options[:has_teamname] == "true_last"))
     if options[:has_teamname] == "true_first" || options[:has_teamname] == "true_last"
       name = row_hash[:teamname].to_s
       team = where(["name =? && parent_id =?", name, id]).first
